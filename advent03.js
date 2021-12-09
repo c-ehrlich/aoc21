@@ -54,18 +54,27 @@ const solutionPart1 = (data) => {
 }
 
 const solutionPart2 = (data) => {
-  const findOxygenRating = (data) => {
+  const findRating = (data, evalFn) => {
+    /*
+     * find oxygen or CO2 (or any other) rating
+     * INPUT
+     *   data (array of strings that represent binary numbers of equal length)
+     *   evalFn (function that takes two integers and returns either '1' or '0')
+     * OUTPUT
+     *   int (the calculated rating, in base10)
+     */
+
     // create array iterator that we will use multiple times
     const stringLength = [...Array(data[0].length)];
 
     for (char in stringLength) {
-      // determine whether 1 or 0 is more popular
+      // determine which character to search for
       let oneCount = 0;
       let zeroCount = 0;
       for (item of data) {
         item[char] === '1' ? oneCount++ : zeroCount++;
       }
-      const winnerChar = oneCount >= zeroCount ? '1' : '0';
+      const winnerChar = evalFn(oneCount, zeroCount);
 
       // figure out which items of the array have the less popular character
       // create the array of items to drop in reverse order, so we don't offset
@@ -89,48 +98,20 @@ const solutionPart2 = (data) => {
     }
   }
 
-  const findCO2ScrubRating = (data) => {
-    // create array iterator that we will use multiple times
-    const stringLength = [...Array(data[0].length)];
-
-    for (char in stringLength) {
-      let oneCount = 0;
-      let zeroCount = 0;
-      // determine whether 1 or 0 is less popular
-      for (item of data) {
-        item[char] === '1' ? oneCount++ : zeroCount++;
-      }
-      const winnerChar = zeroCount <= oneCount ? '0' : '1'; //CHANGED
-      // figure out which items of the array have the less popular character
-      let itemsToDrop = [];
-      for (let [index, item] of data.entries()) {
-        if (item[char] !== winnerChar) {
-          // create the array of items to drop in reverse order, so we don't offset
-          // the data array after deleting an item from it
-          itemsToDrop.unshift(index);
-        }
-      }
-      // delete the items that have the less popular character
-      for (index of itemsToDrop) {
-        data.splice(index, 1);
-      }
-      // if there's only one value, it's the one we're looking for
-      if (data.length === 1) {
-        return parseInt(data[0], 2);
-      }
-    }
-  }
+  // create two functions that use the generic function to find specific ratings
+  const findOxygenRating = (data) => findRating(data, (oneCount, zeroCount) => oneCount >= zeroCount ? '1' : '0');
+  const findCO2rating = (data) => findRating(data, (oneCount, zeroCount) => zeroCount <= oneCount ? '0' : '1');
 
   // create array of input lines
   data = data.split("\n");
 
-  const oxygenRating = findOxygenRating([...data]);
-  const co2rating = findCO2ScrubRating([...data]);
+  const oxygenRating = findOxygenRating([...data])
+  const co2Rating = findCO2rating([...data]);
 
   console.log("oxygen rating: " + oxygenRating);
-  console.log("co2 rating: " + co2rating);
+  console.log("co2 rating: " + co2Rating);
 
-  return oxygenRating * co2rating;
+  return oxygenRating * co2Rating;
 }
 
 /*
